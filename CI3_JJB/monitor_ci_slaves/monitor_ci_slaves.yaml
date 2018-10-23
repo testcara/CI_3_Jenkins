@@ -1,0 +1,53 @@
+- job:
+    name: monitor_ci_slaves
+    project-type: freestyle
+    defaults: global
+    description: "The project is used to monitor ci slaves, checking the status of the services status and slaves status"
+    disabled: false
+    display-name: "monitor_ci_slaves"
+    concurrect: false
+    block-downstream: true
+    block-upstream: true
+    retry-count: 3
+    node: "monitor-ci-slave"
+    logrotate:
+        daysToKeep: 1
+        numToKeep: 20
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+    views:
+      - 'RC_QE_Testing_CI'
+    parameters:
+      - string:
+          name: "pub_ansible_slave_host"
+          default: '10.8.250.232'
+      - string:
+          name: 'perf_jmeter_slave_host'
+          default: '10.8.248.96'
+      - string:
+          name: 'umb_broker_slave_host'
+          default: '10.8.241.108'
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -eo
+          echo '== Download ci files =='
+          rm -rf master.zip
+          rm -rf JJB-exmaples-master
+          wget https://github.com/testcara/JJB-exmaples/archive/master.zip
+          unzip master.zip
+          cd JJB-exmaples-master/ci_3_monitor_project/
+          ./monitor_slaves.sh ${pub_ansible_slave_host} ${perf_jmeter_slave_host} ${umb_broker_slave_host}
+    triggers:
+      - timed: 'H */3 * * *'
+    publishers:
+        - logparser:
+            use-project-rules: true
+            parse-rules: "JJB-exmaples-master/ci_3_monitor_project/log_parser_rule.txt"
+            unstable-on-warning: false
+            fail-on-error: true
+            show-graphs: false
+        - email:
+            recipients: 'wlin@redhat.com'
+            notify-every-unstable-build: false
+            send-to-individuals: true

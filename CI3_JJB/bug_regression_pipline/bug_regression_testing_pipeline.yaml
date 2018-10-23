@@ -1,0 +1,57 @@
+- job:
+    name: Bug_Regression_Testing_Pipeline
+    project-type: pipeline
+    defaults: global
+    description: "The project is used to run bug regression testing for ET build. ET server and bug regression page will be prepared during the job."
+    disabled: false
+    display-name: "Bug_Regression_Testing_Pipeline"
+    concurrect: false
+    block-downstream: true
+    block-upstream: true
+    retry-count: 3
+    node: "ci-python-slaves"
+    logrotate:
+        daysToKeep: 1
+        numToKeep: 20
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+    views:
+      - 'CI_3'
+    parameters:
+      - string:
+          name: "username"
+          default: 'wlin'
+      - password:
+          name: 'password'
+          default: 'arNdkN47_'
+      - password:
+          name: 'bugzilla_password'
+          default: 'arNdkN47_'
+      - string:
+          name: 'et_build_name_or_id'
+          default: ''
+      - string:
+          name: 'ET_Testing_Server'
+          default: 'errata-web-03.host.qe.eng.pek2.redhat.com'
+      - string:
+          name: 'bugs_link'
+          default: ''
+      - string:
+          name: 'space'
+          default: 'PDT'
+      - string:
+          name: 'bug_parent_page'
+          default: '34489277'
+      - bool:
+          name: 'generate_bug_page'
+          default: true
+    sandbox: true
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://gitlab.cee.redhat.com/wlin/CI3_Jenkins.git
+            branches:
+             - origin/master
+            clean: true
+      script-path: CI3_Jenkinsfiles/bug_regression_testing/Jenkinsfile
+      lightweight-checkout: true

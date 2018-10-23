@@ -1,0 +1,30 @@
+pipeline {
+    agent {
+        node {
+            label 'ci-python-slaves'
+        }
+    }
+    stages('Run Bug Regression Testing') {
+        stage('Prepare Bug Regression ET Server') {
+            steps {
+                build(job:"Prepare_ET_Server_For_Build_Testing", parameters: [[$class: 'StringParameterValue', name: 'ET_Testing_Server', value: "${ET_Testing_Server}"], [$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"]])
+            }
+        }
+        stage('Generate The Bug Regression Page') {
+            steps {
+                build(job:"Generate_Bug_Regression_Page", parameters: [[$class: 'StringParameterValue', name: 'username', value: "${username}"], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'hudson.model.PasswordParameterValue', name: 'bugzilla_password', value: "${bugzilla_password}"], [$class: 'StringParameterValue', name: 'bugs_link', value:"${bugs_link}"], [$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'space', value: "${space}"], [$class: 'StringParameterValue', name: 'bug_parent_page', value: "${bug_parent_page}"]])
+            }
+        }
+        stage('Summary Bug Regression Report') {
+            steps {
+                echo "=====================Testing Report: Begin=================="
+                echo "ET RC Version: ${et_build_version}"
+                echo "Testing Type: Bug Regression Testing"
+                echo "Testing Result: IN PROGRESS"
+                echo "Testing Report URL: https://docs.engineering.redhat.com/display/${space}/Bug+Regression+Reports+For+Build+${et_build_name_or_id}"
+                echo "=====================Testing Report: End================"
+
+            }
+        }
+    }
+}

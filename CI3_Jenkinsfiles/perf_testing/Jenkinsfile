@@ -1,0 +1,24 @@
+pipeline {
+    agent {
+        node {
+            label 'et-qe-slave-other'
+        }
+    }
+    stages('Run Performance Testing') {
+        stage('Prepare Perf ET Server') {
+            steps {
+                build(job:"Prepare_ET_Server_For_Build_Testing", parameters: [[$class: 'StringParameterValue', name: 'ET_Testing_Server', value: "${ET_Testing_Server}"], [$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"]])
+                    }
+                }
+        stage('Run Performance Testing') {
+            steps {
+                    build(job:"Trigger_Perf_Testing_Remotely", parameters: [[$class: 'StringParameterValue', name: 'test_type', value:"${test_type}"], [$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'username', value: "${username}"], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'StringParameterValue', name: 'perf_expect_run_time', value: "${perf_expect_run_time}"]])
+                }
+            }
+        stage('Parser Performance Testing Result and Report') {
+            steps {
+                    build(job:"Parser_Performance_Result", parameters: [[$class: 'StringParameterValue', name: 'performance_tolerance', value: "${performance_tolerance}"], [$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'username', value: "${username}" ], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'StringParameterValue', name: 'max_accepted_time', value: "${max_accepted_time}"], [$class: 'StringParameterValue', name: 'perf_jmeter_slave_server', value: "${perf_jmeter_slave_server}"]])
+                }
+            }
+    }
+}

@@ -1,0 +1,47 @@
+pipeline {
+    agent { node { label 'et-qe-slave-other' } }
+    stages('Do ET Build Testing') {
+        stage('Run Multiple Testings'){
+            parallel {
+                stage('Run E2E Testing') {
+                    when {
+                        expression { "${run_e2e_testing}" == 'true' }
+                    }
+                    steps {
+                        build(job:"ET_Builds_E2E_Testing_Pipeline", parameters: [[$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'username', value: "${username}"], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'StringParameterValue', name: 'e2e_expect_run_time', value: "${e2e_expect_run_time}"]])
+                    }
+                }
+                stage('Run Perf Testing') {
+                    when {
+                        expression { "${run_perf_testing}" == 'true' }
+                    }
+                    steps {
+                        build(job:"ET_Builds_Perf_Testing_Pipeline",parameters: [[$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'username', value: "${username}"], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'StringParameterValue', name: 'performance_tolerance', value: "${performance_tolerance}"], [$class: 'StringParameterValue', name: 'perf_expect_run_time', value: "${perf_expect_run_time}"]])
+                    }
+                }
+                stage('Run TS2.0 UAT Testing') {
+                    when {
+                        expression { "${run_ts2_uat_testing}" == 'true' }
+                    }
+                    steps {
+                        build(job:"ET_Builds_TS2_UAT_Testing",parameters: [[$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'username', value: "${username}"], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'StringParameterValue', name: 'ts2_uat_expect_run_time', value: "${ts2_uat_expect_run_time}"], [$class: 'hudson.model.BooleanParameterValue', name: 'IS_COVERAGE_NEEDED', value: Boolean.valueOf("${IS_COVERAGE_NEEDED}")]])
+                    }
+                }
+                stage('Run Bug Regression Testing') {
+                    when {
+                        expression { "${run_bug_regression_testing}" == 'true' }
+                    }
+                    steps {
+                        build(job:"Bug_Regression_Testing_Pipeline",parameters: [[$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'username', value: "${username}"], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'hudson.model.PasswordParameterValue', name: 'bugzilla_password', value: "${bugzilla_password}"], [$class: 'StringParameterValue', name: 'bugs_link', value: "${bugs_link}"], [$class: 'StringParameterValue', name: 'space', value: "${space}"]])
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            build(job:"ET_Builds_Publish_Testing_Report",parameters: [[$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'username', value: "${username}"], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'StringParameterValue', name: 'space', value: "${space}"], [$class: 'StringParameterValue', name: 'parent_page', value: "${parent_page}"]])
+            build(job:"Parser_and_send_report",parameters: [[$class: 'StringParameterValue', name: 'et_build_name_or_id', value: "${et_build_name_or_id}"], [$class: 'StringParameterValue', name: 'username', value: "${username}"], [$class: 'hudson.model.PasswordParameterValue', name: 'password', value: "${password}"], [$class: 'StringParameterValue', name: 'space', value: "${space}"]])
+        }
+    }
+}
