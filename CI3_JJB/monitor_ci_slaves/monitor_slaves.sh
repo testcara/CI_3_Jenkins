@@ -26,17 +26,6 @@ check_slaves_online(){
 	done
 }
 
-check_pub_ansible_service_status(){
-	echo ssh root@${pub_ansible_slave_host} "ansible --version"
-	result=$(ssh root@${pub_ansible_slave_host} "ansible --version")
-    if [[ "${result}" =~ 'ansible 1.9.6' ]]; then
-        echo "The pub ansible service is ready"
-    else
-        echo "Error: The pub ansible service is unavilable"
-        unavilable_services="${unavilable_services} pub_ansible_service"
-        unavilabed_services_count=$((${unavilabed_services_count}+1))
-    fi
-}
 
 check_perf_slave_service_status(){
 	echo curl "http://${perf_jmeter_slave_host}/RPC2"
@@ -65,7 +54,6 @@ check_umb_broker_service_status(){
 check_all_slaves_and_summary_monitor_results(){
 	echo "===== Checking the slaves and services status"
 	check_slaves_online
-	check_pub_ansible_service_status
 	check_perf_slave_service_status
 	check_umb_broker_service_status
 	echo "===== Slave Status Summary Begin ======"
