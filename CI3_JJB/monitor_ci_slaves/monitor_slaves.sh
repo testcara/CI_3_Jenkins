@@ -60,12 +60,14 @@ check_all_slaves_and_summary_monitor_results(){
 	if [[ "${offline_slave_count}" -gt "0" ]]; then
 		echo "== Error: There are ${offline_slave_count} slaves offline"
 		echo "== The offline slaves are:${offline_slaves}"
+		exit 1
 	else
 		echo "== All slaves are online "
 	fi
 	if [[ "${unavilabed_services_count}" -gt "0" ]]; then
 		echo "== Error: There are ${unavilabed_services_count} services unavilable"
 		echo "== The unavilable services are:${unavilable_services}"
+		exit 1
 	else
 		echo "== All services are ready"
 	fi
